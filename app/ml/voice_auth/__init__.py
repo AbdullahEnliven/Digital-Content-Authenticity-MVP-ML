@@ -1,0 +1,2 @@
+"""Voice authentication model package."""
+

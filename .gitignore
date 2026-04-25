@@ -1,0 +1,24 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+.env
+.env.*
+!.env.example
+
+# datasets (deleted but still ignore)
+dataset/
+datasets/
+dataset_text/
+dataset_text_train/
+dataset_video/
+training_data/
+generated_data/
+
+# models are intentionally committed for this project
+
+# logs
+logs/
+*.log

@@ -1,0 +1,8 @@
+services:
+  ml-service:
+    build: .
+    container_name: trustverify_ml_service
+    env_file:
+      - ./.env
+    ports:
+      - "9000:9000"
