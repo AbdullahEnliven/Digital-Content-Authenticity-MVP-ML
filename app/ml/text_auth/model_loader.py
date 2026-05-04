@@ -59,7 +59,7 @@ class TextAuthModelLoader:
                         raise FileNotFoundError(message)
                     return
 
-                self._classifier = joblib.load(classifier_path)
+                self._classifier = _patch_logistic_regression_compat(joblib.load(classifier_path))
                 self._label_encoder = joblib.load(label_encoder_path)
 
     def is_ready(self) -> bool:
@@ -79,3 +79,10 @@ def get_text_auth_model_loader() -> TextAuthModelLoader:
     if _TEXT_AUTH_LOADER is None:
         _TEXT_AUTH_LOADER = TextAuthModelLoader()
     return _TEXT_AUTH_LOADER
+
+
+def _patch_logistic_regression_compat(classifier: LogisticRegression) -> LogisticRegression:
+    """Repair sklearn LogisticRegression pickles saved without legacy attrs."""
+    if isinstance(classifier, LogisticRegression) and not hasattr(classifier, "multi_class"):
+        classifier.multi_class = "auto"
+    return classifier

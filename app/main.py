@@ -1,12 +1,24 @@
+from datetime import datetime, timezone
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.text_auth import router as text_auth_router
 from app.api.routes.voice_auth import router as voice_auth_router
+from app.config import get_settings
 from app.ml.text_auth.model_loader import get_text_auth_model_loader
 from app.ml.voice_auth.model_loader import get_voice_auth_model_loader
-from app.predictor import get_model_status, predict_bytes
+from app.predictor import predict_bytes
 
+settings = get_settings()
 app = FastAPI(title="TrustVerify ML Service", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ml_cors_origins_list,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(text_auth_router)
 app.include_router(voice_auth_router)
 
@@ -24,19 +36,11 @@ def startup_event():
 
 
 @app.get("/health")
-def health():
-    try:
-        status = get_model_status()
-        voice_auth_loader = get_voice_auth_model_loader()
-        text_auth_loader = get_text_auth_model_loader()
-        return {
-            "status": "ok",
-            **status,
-            "voice_auth_ready": voice_auth_loader.is_ready(),
-            "text_auth_ready": text_auth_loader.is_ready(),
-        }
-    except Exception as e:
-        return {"status": "error", "error": str(e), "ready": False}
+async def health_check():
+    return {
+        "status": "online",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @app.post("/predict")
